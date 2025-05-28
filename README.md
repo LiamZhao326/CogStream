@@ -62,7 +62,7 @@ You can find pretrained lora weights in the directory:
 A visualization of an example result demonstrating the model's performance is shown below.
 ![Example Visualization](./images/example_result.png)
 
-Performance metrics of different models in 11 \textit{CogStream} capabilities. Prm. denotes the number of model parameters, Frm. denotes the number of sampled frames.
+Performance metrics of different models in 11 **CogStream** capabilities. Prm. denotes the number of model parameters, Frm. denotes the number of sampled frames.
 
 | **Method** | **Prm.** | **Frm.** | **Basic** |       |         |      | **Streaming** |       |       |      |      | **Global** |       | **Avg.**$\uparrow$ |
 |-----------------|----------|----------|-----------|-------|---------|------|---------------|-------|-------|------|------|------------|-------|-----------------|
