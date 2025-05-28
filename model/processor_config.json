@@ -1,0 +1,10 @@
+{
+  "auto_map": {
+    "AutoProcessor": "processing_cogreasoner.Videollama3Qwen2Processor"
+  },
+  "fps": 1,
+  "image_merge_size": 1,
+  "max_frames": 128,
+  "processor_class": "Videollama3Qwen2Processor",
+  "video_merge_size": 2
+}
