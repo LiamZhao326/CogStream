@@ -52,10 +52,7 @@ torchrun --nproc_per_node=<number of processes> evaluate/answer_generate.py --mo
 
 ## Pre-trained Models
 
-You can find pretrained lora weights in the directory:
-
-- [First Stage](./pre_trainend_lora_weights/stage1)
-- [Second Stage](./pre_trainend_lora_weights/stage2)
+Pretrained lora weights will be released soon.
 
 ## Results
 
