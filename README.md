@@ -1,6 +1,6 @@
 # CogStream: Context-guided Streaming Video Question Answering
 
-This repository is the official implementation of [CogStream: Context-guided Streaming Video Question Answering]. 
+This repository is the official implementation of **CogStream: Context-guided Streaming Video Question Answering**. 
 
 A diagram illustrating the architecture of the CogReasoner model is provided below.
 ![Model Architecture](./images/model_diagram.png)
