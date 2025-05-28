@@ -12,7 +12,7 @@ We follow VideoLLaMA3. To install requirements:
 conda env create -f environment.yml
 ```
 
-Download the VideoLLaMA3 model weights (.safetensors files) only from here and place them in <./model>:
+Download only the VideoLLaMA3 model weights (.safetensors files) from here and place them in the ./model folder in this repository:
 
 - [VideoLLaMA3](https://huggingface.co/DAMO-NLP-SG/VideoLLaMA3-7B)
 
