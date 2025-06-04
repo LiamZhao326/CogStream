@@ -17,6 +17,8 @@ class GPT:
             temperature (float, optional): Sampling temperature for the model.
             record (bool): Whether to record and print token usage.
         """
+        self.api_key=''
+        self.api_url=''
         self.client = OpenAI(api_key=self.api_key, base_url=self.api_url)
         self.conversation_history = []
         self.multi_turn = multi_turn
