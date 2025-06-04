@@ -5,9 +5,6 @@ import requests
 import json
 import time
 class GPT:
-    # 基于openai-api实现GPT访问
-    api_key = 'sk-A9XT7fAm94MdSNbicnxVkTLLjzx4jrOt2qy8q83eFOlXjsbs' # all
-    api_url = "https://api.aigogo.top/v1"
     def __init__(self, multi_turn=False, model="gpt-4o-2024-11-20", max_tokens=2048,temperature=0.8,
                  record=True):
         """
@@ -213,16 +210,4 @@ class GPT:
                 retry += 1
                 continue
         raise ConnectionError("网络异常")
-
-if __name__ == "__main__":
-    client = [GPT('gpt-4o-2024-11-20')]
-    for c in client:
-        print('AI: ',end='')
-        reply = c.vision('请解释图片,中文回复',[r'C:\Users\COG27\Desktop\code\code\2\1.png'])
-        print(reply)
-
-    client = GPT(model='gpt-4o-2024-11-20')
-    print('AI: ',end='')
-    reply = client.chat('你的信息更新到什么时间？')
-    print(reply)
 
