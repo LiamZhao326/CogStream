@@ -225,7 +225,7 @@ if __name__ == "__main__":
     accelerator = Accelerator(gradient_accumulation_steps=gradient_accumulation_steps)
     target_modules = []
     parser = argparse.ArgumentParser(description="Run VideoLLaMA3 full module training.")
-    parser.add_argument("--model_path", type=str, help="Path to the base model directory.")
+    parser.add_argument("--model_path", type=str, default="model", help="Path to the base model directory.")
     parser.add_argument("--video_dir", type=str, help="Directory containing train video files.")
     parser.add_argument("--query_dir", type=str, help="Directory containing train query (QA) files.")
     parser.add_argument("--num_epochs", type=str, help="Training epochs.")
