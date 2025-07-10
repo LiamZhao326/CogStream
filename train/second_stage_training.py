@@ -315,7 +315,7 @@ if __name__ == "__main__":
         current_lr = scheduler.get_last_lr()[0]
         accelerator.print(f"Scheduler advanced. Resumed learning rate approx: {current_lr:.2e}")
     # Prepare the scheduler
-    lora_save_dir = "./stage2_lora_weights"
+    lora_save_dir = "./stage2_lora_weights_custom"
     model, optimizer, dataloader, scheduler = accelerator.prepare(model, optimizer, dataloader, scheduler)
     train(model, dataloader, optimizer, processor, scheduler, accelerator, lora_save_dir, num_epochs=args.num_epochs, accum_steps=gradient_accumulation_steps, resume_batch_idx=RESUME_BATCH_IDX, resume_epoch_idx=RESUME_EPOCH, resume_step_idx=RESUME_GRADIENT_UPDATES)
 
