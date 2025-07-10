@@ -429,7 +429,7 @@ if __name__ == "__main__":
     local_rank = int(os.environ["LOCAL_RANK"])
     setup(global_rank, world_size)
     parser = argparse.ArgumentParser(description="Run VideoLLaMA3 QA selection module training.")
-    parser.add_argument("--model_path", type=str, help="Path to the base model directory.")
+    parser.add_argument("--model_path", type=str, default="model", help="Path to the base model directory.")
     parser.add_argument("--QA_path", type=str, help="Path to the QA directory.")
     args = parser.parse_args()
     model_path = args.model_path
