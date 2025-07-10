@@ -159,12 +159,12 @@ def setup(rank, world_size):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run VideoLLaMA3 inference with custom paths.")
-    parser.add_argument("--model_path", type=str, help="Path to the base model directory.")
+    parser.add_argument("--model_path", type=str, default="model", help="Path to the base model directory.")
     parser.add_argument("--lora_adapter_1_path", type=str, help="Path to the first LoRA adapter.")
     parser.add_argument("--lora_adapter_2_path", type=str, help="Path to the second LoRA adapter.")
     parser.add_argument("--video_dir", type=str, help="Directory containing test video files.")
     parser.add_argument("--query_dir", type=str, help="Directory containing test query (QA) files.")
-    parser.add_argument("--save_dir", type=str, help="Directory to save the result.")
+    parser.add_argument("--save_dir", type=str, default="evaluate/results", help="Directory to save the result.")
     args = parser.parse_args()
     global_rank = int(os.environ["RANK"])
     world_size = int(os.environ["WORLD_SIZE"])
