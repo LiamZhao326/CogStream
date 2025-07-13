@@ -12,7 +12,7 @@ To build this dataset, we collected 6,361 unannotated videos from diverse public
 
 An illustration of the CogStream task and the dataset's composition is provided below.
 <div align="center">
-  <img src="./images/dataset_EN.png" alt="CogStream Task and Dataset Overview" width="800"/>
+  <img src="../images/dataset_EN.png" alt="CogStream Task and Dataset Overview" width="800"/>
 </div>
 
 ## Download and Setup
@@ -46,7 +46,7 @@ The dataset is organized into the following directory structure:
 
 We propose a semi-automatic pipeline to construct this dataset from unlabeled videos, as shown in Figure 2. The pipeline consists of four key steps:
 <div align="center">
-  <img src="./images/pipeline.png" alt="CogStream Task and Dataset Overview" width="800"/>
+  <img src="../images/pipeline.png" alt="CogStream Task and Dataset Overview" width="800"/>
 </div>
 The pipeline consists of four main stages:
 1. **Video Segmentation:** The raw video is divided into non-overlapping segments based on event boundaries, utilizing the [SceneTiling](https://github.com/bigai-nlco/VideoLLaMB?tab=readme-ov-file) algorithm, followed by manual review and refinement to ensure quality.
