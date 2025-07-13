@@ -49,6 +49,7 @@ We propose a semi-automatic pipeline to construct this dataset from unlabeled vi
   <img src="../images/pipeline.png" alt="CogStream Task and Dataset Overview" width="800"/>
 </div>
 The pipeline consists of four main stages:
+
 1. **Video Segmentation:** The raw video is divided into non-overlapping segments based on event boundaries, utilizing the [SceneTiling](https://github.com/bigai-nlco/VideoLLaMB?tab=readme-ov-file) algorithm, followed by manual review and refinement to ensure quality.
 
 2. **QA Pairs Generation:** A Multimodal Large Language Model (MLLM), such as GPT-4o, is used to generate a diverse set of QA pairs for each video segment based on its visual content.
