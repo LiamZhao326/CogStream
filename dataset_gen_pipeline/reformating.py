@@ -138,36 +138,36 @@ def remix(video_data):
 
 def shrim(video_data):
     '''
-    部分片段的QA过多了，限制L1 QA = 5， L3 QA = 4, L4 QA=2;
-    若数量大于限制，则随机删除一组QA对
+    Some segments have too many QA pairs; limit L1 QA to 5, L3 QA to 4, L4 QA to 2.
+    If the quantity exceeds the limit, a QA pair is randomly deleted.
     '''
     for seg_id, seg_info in enumerate(video_data):
         qa_info = seg_info['QA_pairs']
 
-        # 定义每个类别的 QA 对数量限制
+        # Define QA pair quantity limits for each category
         limits = {'L1': 5, 'L3': 4, 'L4': 2}
 
-        # 遍历需要限制的类别
+        # Iterate through the categories that need limiting
         for category, limit in limits.items():
             if category in qa_info:
                 pairs = qa_info[category]
 
-                # 找出所有问题键（以 "Q" 开头的键）
+                # Find all question keys (keys starting with "Q")
                 question_keys = [key for key in pairs.keys() if key.startswith("Q")]
                 N = len(question_keys)
 
-                # 如果 QA 对数量超过限制
+                # If the number of QA pairs exceeds the limit
                 if N > limit:
                     print('!!')
-                    num_to_delete = N - limit  # 计算需要删除的 QA 对数量
-                    keys_to_delete = random.sample(question_keys, num_to_delete)  # 随机选择要删除的问题键
+                    num_to_delete = N - limit  # Calculate the number of QA pairs to delete
+                    keys_to_delete = random.sample(question_keys, num_to_delete)  # Randomly select question keys to delete
 
-                    # 删除选中的 QA 对
+                    # Delete the selected QA pairs
                     for q_key in keys_to_delete:
-                        del pairs[q_key]  # 删除问题
-                        a_key = q_key.replace('Q', 'A')  # 找到对应的回答键
+                        del pairs[q_key]  # Delete the question
+                        a_key = q_key.replace('Q', 'A')  # Find the corresponding answer key
                         if a_key in pairs:
-                            del pairs[a_key]  # 删除回答（如果存在）
+                            del pairs[a_key]  # Delete the answer (if it exists)
 
     return video_data
 
@@ -180,10 +180,10 @@ def main(inputPath,output_folder):
         json_path = os.path.join(inputPath, vid_name) + '.json'
         save =  os.path.join(output_folder, vid_name) + '.json'
         if os.path.exists(save):continue
-        # 读取JSON文件
+        # Read JSON file
         with open(json_path, 'r', encoding='utf-8') as jsonfile:
             video_data = json.load(jsonfile)
-            video_data_ = remix(video_data) # 核心函数
+            video_data_ = remix(video_data) # Core function
             video_data_ = shrim(video_data_)
 
         with open(save, 'w', encoding='utf-8') as jsonfile:
@@ -197,7 +197,7 @@ def dynamic_updating(inputPath,output_folder):
         dynamic_qa = json.load(f)
     os.makedirs(output_folder + '2', exist_ok=True)
     for vid_num, dy_info in tqdm(enumerate(dynamic_qa)):
-        dy_qas = dy_info["Dynamic_updating"] # 默认时间戳都与分割后的视频对齐。
+        dy_qas = dy_info["Dynamic_updating"] # Default timestamps are aligned with the segmented video.
         dy_qas = sorted(dy_qas,key = lambda x: x['time'])
         vid_name = dy_info['name']
         if not vid_name == 'VMFu3vr8jUg':continue
@@ -205,20 +205,20 @@ def dynamic_updating(inputPath,output_folder):
         save = os.path.join(output_folder+'2', vid_name) + '.json'
 
         if not os.path.exists(new_qa_json_path):
-            print(f'找不到 {vid_name} QA文件')
+            print(f'Cannot find {vid_name} QA file')
             continue
         if vid_name =='7iUyB7UNzdE':
             a = 1
-        # 读取JSON文件
+        # Read JSON file
         with open(new_qa_json_path, 'r', encoding='utf-8') as jsonfile:
             video_data = json.load(jsonfile)
         for dy_qa in dy_qas:
             dy_time = dy_qa['time']
             for seg_id, seg_info in enumerate(video_data):
                 st = seg_info['segment_timestamp'] # qa_seg_time
-                # 确认动态更新QA的位置
+                # Confirm the position of dynamic update QA
                 if st[0] <= dy_time < st[1]:
-                    # 由于时间戳人工标注，认为在分割点±3s内都算误差，重新赋值为分割点；否则则认为故意而为。避免与分割点间隔太短时还要额外分割视频，意义不大。
+                    # Since timestamps are manually annotated, consider deviations within ±3s of the split point as errors, reassigning to the split point; otherwise, consider it intentional. This avoids unnecessarily splitting videos when the interval is too short, which is meaningless.
                     if dy_time < st[0] + 3: dy_qa['time'] = st[0]
                     elif dy_time > st[1] - 3: dy_qa['time'] = st[1]
                     if 'Dynamic Updating' not in seg_info['QA_pairs']:
@@ -232,8 +232,8 @@ def dynamic_updating(inputPath,output_folder):
     print(conut)
 
 if __name__ == "__main__":
-    inputPath = r'C:\Users\COG27\Desktop\code\code\2\QA_pairs'
-    dynamicPath = r'C:\Users\COG27\Desktop\code\code\2\1\ALL_dynamic.json'
-    output_folder = r'C:\Users\COG27\Desktop\code\code\2\QA_pairs_new'
-    # main(inputPath,output_folder)
-    if os.path.exists(dynamicPath): dynamic_updating(dynamicPath, output_folder)
+    inputPath = './QA_pairs'
+    dynamicPath = './ALL_dynamic.json'
+    output_folder = './QA_pairs_new'
+    main(inputPath,output_folder)
+    # if os.path.exists(dynamicPath): dynamic_updating(dynamicPath, output_folder)
