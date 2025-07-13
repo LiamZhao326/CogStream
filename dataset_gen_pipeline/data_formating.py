@@ -125,4 +125,4 @@ def format_vqa_dataset_(root_dir):
         json.dump(json_output, json_file, indent=4, ensure_ascii=True)
 
 if __name__ == "__main__":
-    format_vqa_dataset(r'C:\Users\COG27\Desktop\code\code\2_test')
+    format_vqa_dataset('')
