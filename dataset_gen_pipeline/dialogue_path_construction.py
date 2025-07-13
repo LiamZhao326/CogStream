@@ -5,11 +5,8 @@ import argparse
 import numpy as np
 import random
 import re
-
-# 假设 COG_data_format 是一个自定义模块，包含 format_vqa_dataset 函数
 from data_formating import format_vqa_dataset
 
-# 定义常量
 SPECIAL_CLASSES = ['Temporal Perception', 'Dialogue Recalling', 'Object Tracking', 'Dynamic Updating']
 BASIC_CLASSES = ['L1', 'L3', 'L2', 'L4']
 ALL_CLASSES = SPECIAL_CLASSES + BASIC_CLASSES
@@ -404,7 +401,7 @@ def main(args):
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Generate VQA Dataset")
-    parser.add_argument("--root_dir", default=r"C:\Users\COG27\Desktop\code\code\2_test", type=str)
+    parser.add_argument("--root_dir", default="", type=str)
     parser.add_argument("--K", default=2, type=int, help="Number of CQAs introduced per video segment")
     parser.add_argument("--N", default=5, type=int, help="Number of generated QA sequences")
     parser.add_argument("--R", default=4, type=int, help="Score threshold")
