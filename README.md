@@ -1,8 +1,8 @@
 # CogStream: Context-guided Streaming Video Question Answering
 
 <div align="center">
-[![Paper](https://img.shields.io/static/v1?label=Paper&message=Arxiv:Alpha&color=red&logo=arxiv)](https://arxiv.org/abs/2506.10516)
-[![Dataset](https://img.shields.io/badge/dataset-Zenodo-blue)](https://zenodo.org/records/15870909)
+[![Paper](https://img.shields.io/badge/paper-arXiv-red?logo=arxiv)](https://arxiv.org/abs/2506.10516)
+[![Dataset](https://img.shields.io/badge/dataset-Zenodo-blue?logo=zenodo)](https://zenodo.org/records/15870909)
 </div>
 
 This repository is the official implementation of **CogStream: Context-guided Streaming Video Question Answering**.
