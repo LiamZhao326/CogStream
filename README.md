@@ -1,11 +1,48 @@
 # CogStream: Context-guided Streaming Video Question Answering
+[![Paper](httpshttps://img.shields.io/badge/paper-arXiv-red)](https://arxiv.org/abs/2506.10516)
+[![Dataset](https://img.shields.io/badge/dataset-Zenodo-blue)](https://zenodo.org/records/15870909)
+This repository is the official implementation of **CogStream: Context-guided Streaming Video Question Answering**.
 
-This repository is the official implementation of **CogStream: Context-guided Streaming Video Question Answering**. 
+<div align="center">
+  <img src="./images/model_diagram.png" alt="CogReasoner Model Architecture" width="800"/>
+</div>
+<p align="center"><em>Figure 1: An overview of our proposed CogReasoner model.</em></p>
 
-A diagram illustrating the architecture of the CogReasoner model is provided below.
-![Model Architecture](./images/model_diagram.png)
+## 1. Introduction
 
-## Requirements
+Despite advancements in Video Large Language Models (Vid-LLMs), significant challenges persist in streaming video reasoning. The core issues are twofold: the immense computational burden from processing ever-growing historical context, and the model's distraction by irrelevant information, which undermines the reasoning process.
+
+To address this, we introduce **CogStream**, a new and challenging task named **Context-guided Streaming Video Reasoning**. This task simulates real-world scenarios, requiring models to intelligently identify and utilize the most relevant historical context to answer questions about an ongoing video stream.
+
+To support this research, we present:
+- **A new, densely annotated dataset** featuring extensive and hierarchical question-answer pairs, built via a semi-automatic pipeline.
+- **CogReasoner**, a novel baseline model that efficiently tackles the CogStream task by leveraging **Visual Stream Compression** and **Historic Dialogue Retrieval**.
+
+## 2. The CogStream Dataset
+The CogStream dataset is designed to evaluate and validate a model's capabilities in context-guided streaming video reasoning.
+
+**Data Sources:** We collected 6,361 videos from six public sources: MovieChat (40.2%), MECD (16.8%), QVhighlights (9.8%), VideoMME (6.5%), COIN (18.0%), and YouCook2 (8.6%).
+**Scale:** The final dataset comprises 1,088 high-quality videos and 59,032 QA pairs, formally split into a training set (852 videos) and a testing set (236 videos).
+**Key Features:** QA pairs are categorized into three types based on the required temporal context: **Basic QA**, **Streaming QA**, and **Global QA**. Many questions in the Streaming and Global categories require referencing previous dialogue turns for accurate answering, testing a model's deep reasoning abilities.
+
+<div align="center">
+  <img src="./images/dataset_EN.png" alt="CogStream Task and Dataset Overview" width="800"/>
+</div>
+<p align="center"><em>Figure 2: An illustration of the CogStream task and the hierarchical structure of our dataset.</em></p>
+
+**➡️ [Download the Dataset from Zenodo](https://zenodo.org/records/15870909)**
+
+*For detailed instructions on generating your own dataset using our pipeline, please see the guide in the generation directory: [`./dataset_gen_pipeline/README.md`](./dataset_gen_pipeline/README.md).*
+
+## 3. The CogReasoner Model
+
+Our proposed `CogReasoner` framework is designed to efficiently process streaming video and dialogue by focusing on relevant information. It consists of three key modules:
+
+1.  **Visual Stream Compression:** This module intelligently processes the incoming video stream. It uses **Temporal-Semantic Clustering** to group frames into coherent events and then employs **Question-aware Streaming Compression** to preserve relevant events in high detail while aggressively compressing less relevant ones.
+2.  **Historic Dialogue Retrieval:** To handle the ever-growing textual context, this module uses an LLM to select only the most relevant historical QA pairs pertinent to the current question. It also determines if a question can be answered using text alone, avoiding unnecessary visual processing.
+3.  **Video-text Interleave Reasoning:** Finally, the compressed visual information and the retrieved textual context are interleaved chronologically to form the final input, which the LLM uses to generate the answer.
+
+## 4. Requirements
 
 **Note**: Run all commands from the repository root directory to ensure correct path resolution.
 
@@ -19,7 +56,7 @@ Download only the VideoLLaMA3 model weights (.safetensors files) from here and p
 
 - [VideoLLaMA3](https://huggingface.co/DAMO-NLP-SG/VideoLLaMA3-7B)
 
-## Training
+## 5. Training
 
 To train the Historic Dialogue Retrieval module in the paper (First Stage), run this command:
 
@@ -41,7 +78,7 @@ Then, run the training command:
 accelerate launch train/second_stage_training.py --model_path <path to the base model directory> --video_dir <directory containing train video files> --query_dir <directory containing train query (QA) files> --num_epochs <training epochs number>
 ```
 
-## Evaluation
+## 6. Evaluation
 
 To evaluate our model on CogStream, first run the following command to generate answers on our dataset:
 
@@ -50,11 +87,11 @@ torchrun --nproc_per_node=<number of processes> evaluate/answer_generate.py --mo
 ```
 
 
-## Pre-trained Models
+## 7. Pre-trained Models
 
 Pretrained lora weights will be released soon.
 
-## Results
+## 8. Results
 
 A visualization of an example result demonstrating the model's performance is shown below.
 ![Example Visualization](./images/example_result.png)
@@ -77,6 +114,18 @@ Performance metrics of different models in 11 **CogStream** capabilities. Prm. d
 | Qwen2-VL-Max    | -        | 50(max)  | 77.2      | **76.7**| **70.4**| **69.2** | 76.7          | 66.5  | 62.3  | **53.7** | 52.4 | 76.2       | 76.6  | 72.58           |
 | GPT-4o          | -        | 20/seg   | **78.4** | 73.9  | 68.2    | 66.1 | **77.5** | **72.1**| **73.0**| 52.4 | **44.2** | **77.0** | **79.6**| **73.90** |
 
+## 9. Citation
+
+If you find our work useful for your research, please consider citing our paper:
+
+```bibtex
+@article{zhao2025cogstream,
+  title={CogStream: Context-guided Streaming Video Question Answering},
+  author={Zhao, Zicheng and Wang, Kangyu and Li, Shijie and Qian, Rui and Lin, Weiyao and Liu, Huabin},
+  journal={arXiv preprint arXiv:2506.10516},
+  year={2025}
+}
+```
 
 ## License
 
