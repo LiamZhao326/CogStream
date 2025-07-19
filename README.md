@@ -1,7 +1,7 @@
 # CogStream: Context-guided Streaming Video Question Answering
 
 [![Paper](https://img.shields.io/badge/paper-arXiv-red?logo=arxiv)](https://arxiv.org/abs/2506.10516) 
-[![Dataset](https://img.shields.io/badge/dataset-Zenodo-blue?logo=zenodo)](https://zenodo.org/records/15870909)
+[![Dataset](https://img.shields.io/badge/dataset-Zenodo-blue?logo=zenodo)](https://zenodo.org/records/15870909?preview=1&token=eyJhbGciOiJIUzUxMiJ9.eyJpZCI6ImZiYmFlODkxLWUwZTUtNGUyMi04NzU0LWVhYTUxZWM3MzNhMiIsImRhdGEiOnt9LCJyYW5kb20iOiI3MWI5MzIwZDU3MDA1OWExMTBlZWQ5NTE2OTUzZTA5NSJ9.ITwHqhbk7cUcd4f9qHpIx972Jgfdis5qiMJwNXyo5vT7-Ltd-dvGQLD7yItrKmJPJI8oUCLb8ItODsrm7_t6NA)
 
 This repository is the official implementation of **CogStream: Context-guided Streaming Video Question Answering**.
 <div align="center">
@@ -31,7 +31,7 @@ The CogStream dataset is designed to evaluate and validate a model's capabilitie
 </div>
 <p align="center"><em>Figure 2: An illustration of the CogStream task and the hierarchical structure of our dataset.</em></p>
 
-**➡️ [Download the Dataset from Zenodo](https://zenodo.org/records/15870909)**
+**➡️ [Download the Dataset from Zenodo](https://zenodo.org/records/15870909?preview=1&token=eyJhbGciOiJIUzUxMiJ9.eyJpZCI6ImZiYmFlODkxLWUwZTUtNGUyMi04NzU0LWVhYTUxZWM3MzNhMiIsImRhdGEiOnt9LCJyYW5kb20iOiI3MWI5MzIwZDU3MDA1OWExMTBlZWQ5NTE2OTUzZTA5NSJ9.ITwHqhbk7cUcd4f9qHpIx972Jgfdis5qiMJwNXyo5vT7-Ltd-dvGQLD7yItrKmJPJI8oUCLb8ItODsrm7_t6NA)**
 
 *For detailed instructions on generating your own dataset using our pipeline, please see the guide in the generation directory: [`./dataset_gen_pipeline/README.md`](./dataset_gen_pipeline/README.md).*
 
