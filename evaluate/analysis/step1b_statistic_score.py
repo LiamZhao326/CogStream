@@ -34,8 +34,6 @@ LEVELS = {
                   "Streaming/Dynamic Updating", "Streaming/Object Tracking"],
     "Global": ["Global/Overall Summary", "Global/Global Analysis"]
 }
-INVALID_LABEL = {"Streaming/Temporal Perception","Streaming/Object Tracking"}  # 使用集合提高查找效率
-INVALID_LABEL = {"Streaming/Temporal Perception"}  # 使用集合提高查找效率
 SCORE = {
     "Basic": ["IA", "DC", "CA", "TP", "LC"],
     "Streaming": ["IA", "DC", "CA", "TP", "LC"],
@@ -101,14 +99,10 @@ for score_file in tqdm(score_files, desc='Loading data'):
                 index = next(iter(item.keys()))
                 seq, qaid = map(int, re.findall(r'\d+', index))
                 label, _, level = extracted_label(seq, qaid, vid_data["video_name"])
-                if level not in SCORE[score_type] or label in INVALID_LABEL:
+                if level not in SCORE[score_type]:
                     continue
-
                 try:
-                    if label=="Streaming/Object Tracking" and model_f == 'full_module_generate_264011':
-                        score = 6.5
-                    else:
-                        score = int(next(iter(item.values())))
+                    score = int(next(iter(item.values())))
                     all_score.append(score)
                 except Exception as e:
                     print(f"Error in {file}: {e}")
@@ -134,7 +128,7 @@ for model in tqdm(models, desc='Processing models'):
                 index = next(iter(item.keys()))
                 seq, qaid = map(int, re.findall(r'\d+', index))
                 label, seg_id, level = extracted_label(seq, qaid, vid)
-                if level not in SCORE[score_type] or label in INVALID_LABEL:
+                if level not in SCORE[score_type]:
                     continue
                 vid_scors[f"{seg_id},{qaid}"].update({
                     "label": label,
