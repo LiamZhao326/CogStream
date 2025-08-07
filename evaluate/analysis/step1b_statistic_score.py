@@ -6,32 +6,30 @@ from collections import defaultdict
 import functools
 from tqdm import tqdm
 import numpy as np
-# 配置路径和全局变量
-root = 'eval_data/CogReasoner_5_16_exp2_new'
+
+root = 'eval_data/CogReasoner_score'
 score_files = [f'{root}/IA', f'{root}/DC', f'{root}/CA', f'{root}/TP', f'{root}/LC']
-output_json = f'{root}/streamvicl.json'
-raw_datas = glob.glob('/mnt/sda/Streamvicl/Test_dataset_v2/VQA_Dataset/*.json')
+output_json = f'{root}/CogStream.json'
+raw_datas = glob.glob('Test_dataset/VQA_Dataset/*.json')
 N = -1
-# 预加载视频数据到内存
+
 video_data_cache = {}
 for rd in raw_datas:
     vid_name = os.path.basename(rd).replace('.json', '')
     with open(rd, 'r') as f:
         video_data_cache[vid_name] = json.load(f)
 
-# 定义层级和评分规则
 levels = {
     "Streaming/Reasoning": ["Streaming/Reasoning", "Streaming/Analysis", "Streaming/Causality", 
                             "Streaming/Causal Discovery", "Streaming/Causal discovery", 
                             "Streaming/Ingredients Analysis", "Streaming/Intention", "Streaming/Prediction"]
 }
 LEVELS = {
-    "Basic": ["Basic/Attributes", "Basic/Items", "Basic/Co-reference", "Basic/Actions", "Basic/Environment"],
+    "Basic": ["Basic/Attributes", "Basic/Items", "Basic/Co-reference", "Basic/Actions"],
     "Streaming": ["Streaming/Reasoning", "Streaming/Analysis", "Streaming/Causality", 
                   "Streaming/Causal Discovery", "Streaming/Causal discovery", "Streaming/Ingredients Analysis", 
                   "Streaming/Intention", "Streaming/Prediction", "Streaming/Sequence Perception", 
-                  "Streaming/Dialogue Recalling", "Streaming/Temporal Perception", 
-                  "Streaming/Dynamic Updating", "Streaming/Object Tracking"],
+                  "Streaming/Dialogue Recalling", "Streaming/Dynamic Updating", "Streaming/Object Tracking"],
     "Global": ["Global/Overall Summary", "Global/Global Analysis"]
 }
 SCORE = {
@@ -44,9 +42,9 @@ SCORE = {
     "TP": ['Basic', 'Streaming', 'Global'],
     "LC": ['Basic', 'Streaming', 'Global']
 }
-k = 5 # 保留小数位数
+k = 5 # Decimal Places to Be Retained
 
-# 缓存提取标签的函数
+
 @functools.lru_cache(maxsize=None)
 def extracted_label(seq, qaid, vid_name):
     data = video_data_cache[vid_name][seq]['Data'][qaid]
@@ -75,7 +73,6 @@ def average_adjacent_coherence(nums):
     avg_diff = total_diff / (len(nums_) - 1)
     return round((1 - avg_diff) * 10, k)
 
-# 初始化结果存储
 final_scores = {}
 qa_class = defaultdict(lambda: defaultdict(list))
 qa_level = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
@@ -84,7 +81,6 @@ exter_conherence = defaultdict(list)
 vids = set()
 models = set()
 
-# 加载并计算评分
 for score_file in tqdm(score_files, desc='Loading data'):
     score_type = os.path.basename(score_file)
     model_files = os.listdir(score_file)
@@ -110,7 +106,6 @@ for score_file in tqdm(score_files, desc='Loading data'):
         final_score = round(sum(all_score) / len(all_score), 2) * 10 if all_score else 0
         final_scores.setdefault(model_f, {}).update({score_type: final_score})
 
-# 处理模型和连贯性
 for model in tqdm(models, desc='Processing models'):
     for vid in vids:
         SKIP = False
@@ -158,7 +153,6 @@ for model in tqdm(models, desc='Processing models'):
             last_seg = seg_id
         exter_conherence[model].append(average_adjacent_coherence(exter))
 
-# 计算平均分
 def get_mean_score_(dict_score,MEAN=False):
     if isinstance(dict_score, dict,):
         all_score = []
@@ -185,6 +179,5 @@ for model, scores in final_scores.items():
         "Mean": mean_score
     })
 
-# 保存结果
 with open(output_json, 'w') as f:
     json.dump(final_scores, f, indent=4)
