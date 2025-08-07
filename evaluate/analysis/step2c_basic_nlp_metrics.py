@@ -1,4 +1,3 @@
-# 分词器存储路径：'anaconda3/envs/clip_vid/share/nltk_data'
 from pycocoevalcap.rouge.rouge import Rouge
 from pycocoevalcap.cider.cider import Cider
 from nltk.tokenize import word_tokenize
@@ -11,36 +10,36 @@ Basic metrics: BLEU-4, METEOR, ROUGE, CIDEr
 
 def evaluate_vqa(references, candidate):
     """
-    评估VQA输出与参考答案的相似性
-    输入格式：
-    references : 参考答案列表，例如 ["gt_A1"]
-    candidate  : 生成答案字符串，例如 "A1"
+    Evaluate similarity between VQA output and reference answers
+    Input format:
+    references : List of reference answers, e.g. ["gt_A1"]
+    candidate  : Generated answer string, e.g. "A1"
     """
-    # 小写
+    # Convert to lowercase
     refs_lower = [ref.lower() for ref in references]
     candidate_lower = candidate.lower()
 
-    # 构建数据
+    # Prepare data
     ref_tokens = [word_tokenize(ref) for ref in refs_lower]
     cand_tokens = word_tokenize(candidate_lower)
 
-    # BLEU-4计算
+    # Calculate BLEU-4
     bleu_score = sentence_bleu(
         ref_tokens, 
         cand_tokens, 
         weights=(0.50, 0.50)
     )
-    # METEOR 计算
+    # Calculate METEOR
     meteor_score_val = meteor_score(
         ref_tokens, 
         cand_tokens, 
     )
 
-    # 构建数据
+    # Format data for ROUGE
     refs_formatted = {'test_case': references}
     cands_formatted = {'test_case': [candidate]}
 
-    # ROUGE-L计算
+    # Calculate ROUGE-L
     rouge_scorer = Rouge()
     rouge_score, _ = rouge_scorer.compute_score(refs_formatted, cands_formatted)
 
@@ -52,7 +51,7 @@ def evaluate_vqa(references, candidate):
 
 if __name__ == "__main__":
     Local_Metrics = False
-    # 示例数据
+    # Example data
     example_data = [
         {
             "Q": "What is the capital of France?",
@@ -75,23 +74,23 @@ if __name__ == "__main__":
             "A2": "The sky is blue."
         }
     ]
-    # CIDEr计算
+    # Calculate CIDEr
     refs_formatted = {str(key):[val['A2']] for key, val in enumerate(example_data)}
     cands_formatted = {str(key):[val['A1'] ]for key, val in enumerate(example_data)}
     cider_scorer = Cider()
     mean_cider_score, cider_score = cider_scorer.compute_score(refs_formatted, cands_formatted)
 
-    # 其余指标计算
+    # Calculate other metrics
     bleu_score,meteor_score_val,rouge_score = [],[],[]
 
-    # 对每个样本进行评估
+    # Evaluate each sample
     for i, data in enumerate(example_data):
         scores = evaluate_vqa([data['A2']], data['A1'])
         bleu_score.append(scores['BLEU-4'])
         meteor_score_val.append(scores['METEOR'])
         rouge_score.append(scores['ROUGE-L'])
 
-        #打印单样本评估结果
+        # Print individual sample evaluation results
         if Local_Metrics:
             print(f"\nSample {i+1}:")
             print(f"Q: {data['Q']}")
@@ -113,4 +112,3 @@ if __name__ == "__main__":
     }
     for metric, value in final_score.items():
         print(f"{metric}: {value:.4f}")
-
