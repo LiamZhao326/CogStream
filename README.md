@@ -97,7 +97,7 @@ Pretrained lora weights will be released soon.
 A visualization of an example result demonstrating the model's performance is shown below.
 ![Example Visualization](./images/example_result.png)
 
-Performance metrics of different models in 11 \textit{CogStream} capabilities is shown below. Prm. denotes the number of model parameters, Frm. denotes the number of sampled frames. Models denoted by $\dagger$ were fine-tuned on our training set; all other results are zero-shot.
+Performance metrics of different models in 11 CogStream capabilities is shown below. Prm. denotes the number of model parameters, Frm. denotes the number of sampled frames. Models denoted by $\dagger$ were fine-tuned on our training set; all other results are zero-shot.
 ![Exp Result](./images/exp_result.png)
 
 ## 9. Citation
@@ -116,6 +116,7 @@ If you find our work useful for your research, please consider citing our paper:
 ## License
 
 This project is licensed under the [MIT License](LICENSE). All contributions to the code must be made under this license. See the [LICENSE](LICENSE) file for details.
+
 
 
 
