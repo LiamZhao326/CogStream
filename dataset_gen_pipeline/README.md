@@ -66,6 +66,27 @@ The pipeline consists of four main stages:
 
 You can use our pipeline to create a custom CogStream-style dataset from your own unlabeled videos. All scripts are located in the `./dataset_gen_pipeline/` directory.
 
+### File structure
+```
+{ROOT_DIR}/
+├── segments/                  # 1.1 Split video segments
+│   └── {video_name}/
+│       └── {video_name}_segment_*.mp4
+├── keyframes/                 # 1.2 Sampled frames for QA generation
+│   └── {video_name}/
+│       └── keyframe_*_*.jpg
+│
+├── QA_pairs/                  # 2.1 Raw QA pairs from GPT
+├── QA_pairs_reformatted/      # 2.2 Reformatted QA
+├── QA_RS/                     # 3 Relevance scores
+│
+│
+├── CogStream_raw_dataset/     # 4.1 Intermediate dialogue data
+├── QA_Dataset/                # 4.2 Simplified QA chains (for training)
+│   └── {video_name}.json
+└── VQA_Dataset/               # 4.3 Full annotations (for evaluation)
+    └── {video_name}.json
+```
 ### 1. Video Segmentation
 First, prepare a JSON file that maps video names to segmentation timestamps:
 ```json

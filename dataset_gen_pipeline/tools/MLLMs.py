@@ -5,7 +5,7 @@ import requests
 import json
 import time
 class GPT:
-    def __init__(self, multi_turn=False, model="gpt-4o-2024-11-20", max_tokens=2048,temperature=0.8,
+    def __init__(self, multi_turn=False, model="gpt-4o", max_tokens=2048,temperature=0.8,
                  record=True):
         """
         Initialize the Qwen class with the OpenAI client and configuration parameters.
@@ -104,7 +104,7 @@ class GPT:
                 print(f"Request failed: {e}")
                 retry += 1
                 continue
-        raise ConnectionError("网络异常")
+        raise ConnectionError("Network exception")
 
     def chat(self, prompt, system=None):
         """
@@ -156,28 +156,28 @@ class GPT:
                 print(f"Request failed: {e}")
                 retry += 1
                 continue
-        raise ConnectionError("网络异常")
+        raise ConnectionError("Network exception")
 
     def mix_chat(self, prompt, imagesFetched=None, used_url=True):
 
         content = []
-        # 识别 '/image'
+        # Recognize '/image'
         parts = prompt.split('/image')
         for i, part in enumerate(parts):
-            # 文本
+            # Text
             if part.strip():
                 content.append({"type": "text", "text": part.strip()})
-            # 图像 URL
+            # Image URL
             if imagesFetched and i < len(imagesFetched):
                 content.append({"type": "image_url", "image_url": {"url": imagesFetched[i]}})
-        # 构建完整消息
+        # Build complete message
         message = [{"role": "user", "content": content}]
 
-        # 添加用户输入到对话历史
+        # Add user input to conversation history
         if self.multi_turn:
             self.conversation_history.append(message[0])
 
-        # 准备请求数据
+        # Prepare request data
         # Manage conversation history for multi-turn
         if self.multi_turn:
             self.conversation_history.append(message)
@@ -211,5 +211,5 @@ class GPT:
                 print(f"Request failed: {e}")
                 retry += 1
                 continue
-        raise ConnectionError("网络异常")
+        raise ConnectionError("Network exception")
 

@@ -186,9 +186,6 @@ Provide the output in the following JSON format:
             }
         }
                 '''
-    # TODO：'''在设计问答对时，你需要在充分理解完整视频内容的基础上，基于视频完整内容来设计问题，并确保其答案需依赖contex的文本信息；内容精炼明确，信息完整，不要冗长
-    # 1. random.choice(range(len(segments)-1)), 选择1个幸运段落，用于生成对话回顾问题。将全部的QA送给GPT，要求其挑选其中有趣的、独立的问题，根据所给范式进行回顾性提问。放到dict最后，新增kv就行
-    # 2. 长共指范式改一下；不用提问当前内容了，因此可以仅提供第一次出现时的相关视频帧。
 
         prompt = f'''
 # Task Description
@@ -230,7 +227,7 @@ Provide the output in the following JSON format:
 - Current video frames: 
 '''
         return prompt
-    # 生成QA后，TaskOne:进行段内信息总结，用于最后片段生成Global Q&A；TaskTwo:进行整体信息总结，后者为下一片段Q&A生成的上下文信息来源
+    # After generating QA, TaskOne: summarize the information within the segment, used for generating Global Q&A at the last segment; TaskTwo: summarize the overall information, which is the context information for generating QA pairs of the next segment.
     elif not Global:
         format1 = '{"L1_L2":"","L3":"",...}'
         format2 = '{"Task_One":{"L1_L2":"","L3":"",...},"Task_Two":{"L1_L2":"","L3":"",...}}'
@@ -277,7 +274,7 @@ Provide the output in the following JSON format:
             ```json{format2}```
 
             Now, Please provide the final summarized result as per these requirements.'''
-    # 最后一段时，需要额外生成global QA, 会用到全部片段的QA总结（即Task One的内容）
+    # At the last segment, we need to generate global QA, which will use the QA summary of all segments (i.e., the content of Task One).
     else:
         format = """
 {
