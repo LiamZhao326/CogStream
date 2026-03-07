@@ -159,7 +159,7 @@ def train(model, dataloader, optimizer, processor, scheduler, accelerator, lora_
                         answer = qa["A"][0] + "<|im_end|>"
                         
                         try:
-                            loss = forward(conversation, model, processor, answer, ast.literal_eval(qa["info"]["COI"][0]), qa["info"]["is_visual"][0], accelerator)
+                            loss = forward(conversation, model, processor, answer, ast.literal_eval(qa["info"]["COR"][0]), qa["info"]["is_visual"][0], accelerator)
                         except Exception as e:
                             print(f"video {video_path} error {e}")
                         

@@ -195,20 +195,18 @@ def dynamic_updating(inputPath,output_folder):
     conut = 0
     with open(inputPath,'r') as f:
         dynamic_qa = json.load(f)
-    os.makedirs(output_folder + '2', exist_ok=True)
+    os.makedirs(output_folder + '_dynamic', exist_ok=True)
     for vid_num, dy_info in tqdm(enumerate(dynamic_qa)):
         dy_qas = dy_info["Dynamic_updating"] # Default timestamps are aligned with the segmented video.
         dy_qas = sorted(dy_qas,key = lambda x: x['time'])
         vid_name = dy_info['name']
-        if not vid_name == 'VMFu3vr8jUg':continue
         new_qa_json_path = os.path.join(output_folder, vid_name) + '.json'
-        save = os.path.join(output_folder+'2', vid_name) + '.json'
+        save = os.path.join(output_folder+'_dynamic', vid_name) + '.json'
 
         if not os.path.exists(new_qa_json_path):
             print(f'Cannot find {vid_name} QA file')
             continue
-        if vid_name =='7iUyB7UNzdE':
-            a = 1
+
         # Read JSON file
         with open(new_qa_json_path, 'r', encoding='utf-8') as jsonfile:
             video_data = json.load(jsonfile)
@@ -232,8 +230,13 @@ def dynamic_updating(inputPath,output_folder):
     print(conut)
 
 if __name__ == "__main__":
-    inputPath = './QA_pairs'
-    dynamicPath = './ALL_dynamic.json'
-    output_folder = './QA_pairs_new'
-    main(inputPath,output_folder)
+    parser = argparse.ArgumentParser(description="Reformat QA pairs")
+    parser.add_argument("--root_dir", default="./", type=str, help="Root directory of dataset")
+    args = parser.parse_args()
+
+    inputPath = os.path.join(args.root_dir, 'QA_pairs')
+
+    output_folder = os.path.join(args.root_dir, 'QA_pairs_reformatted')
+    main(inputPath, output_folder)
+    # dynamicPath = os.path.join(args.root_dir, 'ALL_dynamic.json')
     # if os.path.exists(dynamicPath): dynamic_updating(dynamicPath, output_folder)

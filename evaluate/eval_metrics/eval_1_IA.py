@@ -1,7 +1,6 @@
 
 import json,os,argparse,glob,re,sys
 from tqdm import tqdm
-from utils.Deepseekv3 import Deepseek_sf,Deepseek_sf_
 from utils.GPT import GPT_OpenAi
 def extract_scores(s):
 
@@ -124,10 +123,7 @@ def main(args):
 
 
 def create_client(model_name):
-    if 'gpt' not in model_name:
-        return Deepseek_sf_(model = model_name)
-    else:
-        return GPT_OpenAi(model = model_name)
+    return GPT_OpenAi(model = model_name)
 
 def parse_args():
     parser = argparse.ArgumentParser()

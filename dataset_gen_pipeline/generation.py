@@ -11,7 +11,7 @@ from tools.MLLMs import GPT
 from tools.all_prompt import *
 
 def write_json_data(data, json_path):
-    """实时写入 JSON 数据到文件"""
+    """Write JSON data to file in real-time."""
     os.makedirs(os.path.dirname(json_path), exist_ok=True)
 
     try:
@@ -31,10 +31,10 @@ def write_json_data(data, json_path):
                 json.dump(existing_data, json_file, ensure_ascii=False, indent=4)
                 json_file.truncate()
     except Exception as e:
-        print(f"写入 JSON 文件失败: {e}")
+        print(f"Failed to write JSON file: {e}")
 
 def check_qa_pairs(data, last_key=0):
-    """检查 QA 对的结构和连续性"""
+    """Check the structure and continuity of QA pairs."""
     if isinstance(data, dict):
         for key, value in data.items():
             if not value:
@@ -59,7 +59,7 @@ def check_qa_pairs(data, last_key=0):
     return True
 
 def gpt_response(prompt, gpt_client, images_url=None, max_retries=5):
-    """调用 GPT API 并处理重试"""
+    """Call GPT API and handle retries."""
     retry_count = 0
     while retry_count <= max_retries:
         try:
@@ -67,15 +67,15 @@ def gpt_response(prompt, gpt_client, images_url=None, max_retries=5):
             if response_format := QA_format(response):
                 if check_qa_pairs(response_format):
                     return response_format
-            print(f"QA 格式不正确，重试中 ({retry_count + 1}/{max_retries}): {response_format}")
+            print(f"QA format is incorrect, retrying ({retry_count + 1}/{max_retries}): {response_format}")
             retry_count += 1
         except Exception as e:
-            print(f"GPT 调用失败: {e}")
+            print(f"GPT call failed: {e}")
             retry_count += 1
-    raise ConnectionError(f"GPT 调用失败超过 {max_retries} 次")
+    raise ConnectionError(f"GPT call failed more than {max_retries} times")
 
 def merge_dicts(a: dict, b: dict, key_prefixes=('Q', 'A')) -> dict:
-    """合并字典并自动递增键序号"""
+    """Merge dictionaries and automatically increment key sequence numbers."""
     def _process_item(target, source):
         for key, value in source.items():
             if any(key.startswith(prefix) for prefix in key_prefixes):
@@ -97,7 +97,7 @@ def merge_dicts(a: dict, b: dict, key_prefixes=('Q', 'A')) -> dict:
     return result
 
 def QA_format(text):
-    """解析 GPT 响应中的 JSON 数据"""
+    """Parse JSON data from GPT response."""
     if not text:
         return None
     text = re.sub(r'("[^"]+":\s*"[^"]*")\s*("[^"]+":\s*"[^"]*")', r'\1, \2', text)
@@ -109,11 +109,11 @@ def QA_format(text):
                     return json.loads(part.replace("json", "", 1).strip())
         return json.loads(text)
     except json.JSONDecodeError as e:
-        print(f"JSON 解析失败: {e}")
+        print(f"JSON parsing failed: {e}")
         return None
 
 def main(args):
-    """主函数：处理视频并生成 QA 对"""
+    """Main function: process video and generate QA pairs."""
     root_dir = args.root_dir
     videos_file = os.path.join(root_dir, 'segments')
     keyframe_file = os.path.join(root_dir, 'keyframes')
@@ -132,14 +132,14 @@ def main(args):
         json_path = os.path.join(output_file, f"{vid_name}.json")
 
         if os.path.exists(json_path):
-            print(f"Video_{vid_name} 已处理，跳过")
+            print(f"Video_{vid_name} has been processed, skipping")
             continue
 
         if not os.path.isdir(vid_path):
-            print(f"未找到视频目录: {vid_path}")
+            print(f"Video directory not found: {vid_path}")
             continue
 
-        print(f"处理 Video_{vid_name}")
+        print(f"Processing Video_{vid_name}")
         cr_info = vid_info.get("co-reference", [])
         cr_all_params = {cr["object"]: {'frames_url': [], 'first': False, 'second': False, 'cr_qa': None, 'p_context': ''} 
                          for cr in cr_info}
@@ -147,11 +147,11 @@ def main(args):
         segment_files = sorted(glob(os.path.join(vid_path, f'{vid_name}_segment_*.mp4')) or 
                               glob(os.path.join(vid_path, 'segment_*.mp4')))
         if not segment_files:
-            print(f"未找到视频文件: {vid_path}")
+            print(f"Video file not found: {vid_path}")
             continue
 
         lucky_seg = random.randint(1, len(segment_files) - 1)
-        print(f"Dialogue Recall片段: {lucky_seg}/{len(segment_files)}")
+        print(f"Dialogue Recall segment: {lucky_seg}/{len(segment_files)}")
         
         global_summary = ""
         qa_pairs = {"title": "", "QA_pairs": {"L1": {}, "L3": {}}}
@@ -160,7 +160,7 @@ def main(args):
             kf_path_lst = sorted(glob(os.path.join(keyframe_file, vid_name, f'keyframe_{seg_id}_*.jpg')),
                                  key=lambda x: int(re.search(r'keyframe_\d+_(\d+)', x).group(1)))
             if not kf_path_lst:
-                print(f"未找到关键帧: {seg_id}")
+                print(f"Keyframe not found: {seg_id}")
                 continue
 
             kf_path_lst = [x.replace('\\', '/') for x in kf_path_lst]
@@ -171,20 +171,20 @@ def main(args):
             frame_ts_list = '[' + ", ".join(f"{round(t)}s" for t in frame_ts) + ']'
             images_url = kf_path_lst
 
-            # 生成 QA 对
+            # Generate QA pairs
             prompt = creat_prompt(first=True, time=frame_ts_list)
             qa_pairs = gpt_response(prompt, gpt_client, images_url)
             qa_pairs_l3 = gpt_response(creat_prompt(history=global_summary, time=frame_ts_list), gpt_client, images_url)
             qa_pairs_l3 = gpt_response(polish(qa_pairs_l3), gpt_client)
             qa_pairs['QA_pairs'].update(qa_pairs_l3)
 
-            # 生成总结
+            # Generate summary
             prompt = creat_prompt(history=None, qa_pairs=qa_pairs['QA_pairs'], summarize=True)
             summary = gpt_response(prompt, gpt_client)
             t = f'{cur_seg_time[0]:.2f}s to {cur_seg_time[-1]:.2f}s'
             global_summary += f"({t}) Clip {seg_id}-{qa_pairs['title']}: [{', '.join(map(str, summary.values()))}]\n"
 
-            # 处理全局 QA 和回归问题
+            # Process global QA and regression problem
             if seg_id == len(segment_files):
                 prompt = creat_prompt(Global=global_summary, time=[f"{t[0]:.2f}s to {t[-1]:.2f}s" for t in seg_timestamp])
                 qa_global = gpt_response(polish(gpt_response(prompt, gpt_client), CR=True), gpt_client)
@@ -195,7 +195,7 @@ def main(args):
                 qa_recall = gpt_response(recall(qas), gpt_client)
                 qa_pairs['QA_pairs']['Dialogue Recalling'] = qa_recall
 
-            # 处理共指问题
+            # Process co-reference problem
             for cr in cr_info:
                 cr_object = cr["object"]
                 cr_time = cr["appearance_time"]
@@ -216,7 +216,7 @@ def main(args):
                     qa_pairs['QA_pairs'].setdefault('Object Tracking', {}).update({cr_object: final_answer})
                     cr_params['second'] = True
 
-            # 存储数据
+            # Store data
             vid_data = {
                 "segment_path": seg_path,
                 "segment_id": seg_id,
@@ -229,11 +229,16 @@ def main(args):
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Video processing and QA generation")
-    parser.add_argument("--seg_json_file", default=r"video_segments_train.json", 
-                        type=str, help="Path to segment JSON file")
     parser.add_argument("--root_dir", default="./Dataset", type=str, help="Root directory of dataset")
+    parser.add_argument("--seg_json_file", default="", type=str,
+                        help="Path to segment JSON file (default: root_dir/vid_segments.json)")
     parser.add_argument("--GPT_model", default="", type=str, help="GPT model to use")
-    return parser.parse_args()
+    args = parser.parse_args()
+    # Auto-fill seg_json_file based on root_dir if not specified
+    if not args.seg_json_file:
+        args.seg_json_file = os.path.join(args.root_dir, "vid_segments.json")
+    return args
+
 if __name__ == "__main__":
     args = parse_args()
     main(args)

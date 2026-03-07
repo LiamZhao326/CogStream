@@ -244,13 +244,19 @@ def main(args):
 def parse_args():
     """Parse command-line arguments."""
     parser = argparse.ArgumentParser(description="Generate QA Table of Inference")
+    parser.add_argument("--root_dir", default="./", type=str, help="Root directory of dataset")
     parser.add_argument("--inputPath", default="", type=str,
-                        help="Input directory for QA JSON files")
+                        help="Input directory for QA JSON files (default: root_dir/QA_pairs)")
     parser.add_argument("--output_folder", default="", type=str,
-                        help="Output directory for processed JSON files")
+                        help="Output directory for processed JSON files (default: root_dir/QA_RS)")
     parser.add_argument("--GPT_model", default="", type=str, help="GPT model to use")
     return parser.parse_args()
 
 if __name__ == "__main__":
     args = parse_args()
+    # Auto-fill paths based on root_dir if not specified
+    if not args.inputPath:
+        args.inputPath = os.path.join(args.root_dir, 'QA_pairs')
+    if not args.output_folder:
+        args.output_folder = os.path.join(args.root_dir, 'QA_RS')
     main(args)

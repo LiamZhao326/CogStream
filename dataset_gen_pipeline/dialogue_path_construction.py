@@ -15,9 +15,9 @@ L1_SELECTION_RATIO = 0.4
 CHAIN_BOOST_FACTOR = 0.1
 
 def extract_label(text):
-    """从文本中提取标签、问题和时间戳（当前时间戳未使用）。"""
-    time = None  # 时间戳功能当前未启用
-    text = re.sub(r'\([^)]+\)', '', text)  # 移除括号内容
+    """Extract label, question, and timestamp from text (timestamp functionality currently not used)."""
+    time = None  # Timestamp functionality currently not used
+    text = re.sub(r'\([^)]+\)', '', text)  # Remove content inside parentheses
     match = re.match(r"^\[(.*?)\]\s*(.*)", text)
     if match:
         label = match.group(1)
@@ -26,43 +26,43 @@ def extract_label(text):
     return None
 
 class Sequence:
-    """生成视频问答序列的核心类。"""
+    """Core class for generating video QA sequences."""
     def __init__(self, video_data, list_raw, R=4, tau=2, K=1, N=3):
-        self.list_raw = list_raw  # 评分数据
-        self.video_data = video_data  # QA 对数据
-        self.tau = tau  # Softmax 温度参数
-        self.K = K  # 每段引入的高级 QA 数量
-        self.N = N  # 生成的序列数量
-        self.R = R  # 分数阈值
+        self.list_raw = list_raw  # Score data
+        self.video_data = video_data  # QA pairs data
+        self.tau = tau  # Softmax temperature parameter
+        self.K = K  # Number of advanced QA per segment
+        self.N = N  # Number of generated sequences
+        self.R = R  # Score threshold
 
-        self.qa_slq2id = {}  # (segment, level, qa) 到 ID 的映射
-        self.qa_id2cot = {}  # ID 到 CoT（推理链）的映射
-        self.chain_lengths = {}  # 推理链长度
-        self.qa_num = 0  # QA 对总数
-        self.qa_list = []  # 当前序列中的 QA ID
+        self.qa_slq2id = {}  # (segment, level, qa) to ID mapping
+        self.qa_id2cor = {}  # ID to CoR (inference chain) mapping
+        self.chain_lengths = {}  # Inference chain length
+        self.qa_num = 0  # Total number of QA pairs
+        self.qa_list = []  # QA IDs in current sequence
         self._initial_params()
 
-    def id2cot(self, id0):
-        """根据 ID 获取推理链（CoT）。"""
-        coi = self.qa_id2cot.get(id0, [])
-        if coi:
+    def id2cor(self, id0):
+        """Get CoR from ID."""
+        cor = self.qa_id2cor.get(id0, [])
+        if cor:
             idx = self.qa_list.index(id0)
-            coi = [(self.id2slq(id1), score) for id1, score in coi if id1 in self.qa_list[:idx]]
-            coi = sorted(coi, key=lambda x: x[1], reverse=True)
-            return [x[0] for x in coi]
+            cor = [(self.id2slq(id1), score) for id1, score in cor if id1 in self.qa_list[:idx]]
+            cor = sorted(cor, key=lambda x: x[1], reverse=True)
+            return [x[0] for x in cor]
         return []
 
     def slq2id(self, slq0, level_idx=None):
-        """将 (segment, level, qa) 三元组转换为 ID。"""
+        """Convert (segment, level, qa) triplet to ID."""
         for id_, slq in self.qa_slq2id.items():
             if slq0 == slq:
                 return int(id_)
-        if level_idx != 2:  # 仅在特定情况下打印警告
+        if level_idx != 2:  # Print warning only in specific cases
             print(f'Cannot find {slq0}')
         return None
 
     def id2slq(self, id0):
-        """将 ID 转换为 (segment, level, qa) 三元组。"""
+        """Convert ID to (segment, level, qa) triplet."""
         for id_, slq in self.qa_slq2id.items():
             if id0 == int(id_):
                 return slq
@@ -70,10 +70,10 @@ class Sequence:
         return None
 
     def _initial_params(self):
-        """初始化参数和评分矩阵。"""
+        """Initialize parameters and score matrix."""
         Object = {}
         Dynamic = []
-        Dialogue = [False, None, None]  # [是否有前驱，前驱 slq，前驱 id]
+        Dialogue = [False, None, None]  # [Has predecessor, predecessor slq, predecessor id]
 
         for seg_info in self.video_data:
             seg_idx = seg_info['segment_id']
@@ -85,21 +85,21 @@ class Sequence:
                     for qa_idx in sorted(qa_indices):
                         slq = (seg_idx, level_idx, qa_idx)
                         self.qa_slq2id[self.qa_num] = slq
-                        self.qa_id2cot[self.qa_num] = []
+                        self.qa_id2cor[self.qa_num] = []
                         self.qa_num += 1
                 elif level_key in SPECIAL_CLASSES:
                     if level_key == 'Dynamic Updating':
                         for i, _ in enumerate(QAs):
                             slq = (seg_idx, level_key, i)
-                            coi = Dynamic.copy()
+                            cor = Dynamic.copy()
                             self.qa_slq2id[self.qa_num] = slq
-                            self.qa_id2cot[self.qa_num] = coi
+                            self.qa_id2cor[self.qa_num] = cor
                             Dynamic.append((self.qa_num, SCORE_THRESHOLD))
                             self.qa_num += 1
                         continue
                     elif level_key == 'Temporal Perception':
                         slq = (seg_idx, level_key, 1)
-                        coi = []
+                        cor = []
                         ori_qa_id = int(next(iter(QAs['QA_pairs'].keys()))[-1])
                         ori_seg_id = int(QAs['Original_seg_ID'])
                         q, _, s = Dialogue
@@ -110,24 +110,24 @@ class Sequence:
                         ori_seg = int(QAs['Original_seg_ID']) + 1
                         ori_qaid = int(str(QAs['Original_QA_ID'])[-1])
                         slq = (seg_idx, level_key, 1)
-                        coi_id = self.slq2id((ori_seg, 1, ori_qaid))
-                        if coi_id is None:
+                        cor_id = self.slq2id((ori_seg, 1, ori_qaid))
+                        if cor_id is None:
                             print(f'{level_key} !')
                             Dialogue = [False, slq, (ori_seg - 1, 1, ori_qaid)]
                             continue
                         else:
-                            coi = [(coi_id, SCORE_THRESHOLD)]
+                            cor = [(cor_id, SCORE_THRESHOLD)]
                     elif level_key == 'Object Tracking':
                         for qa_idx, qa_value in QAs.items():
                             if 'L1' in qa_value:
                                 slq = (seg_idx, level_key, (qa_idx, -1))
                                 Object[qa_idx] = self.qa_num
-                                coi = []
+                                cor = []
                             else:
                                 slq = (seg_idx, level_key, (qa_idx, random.randint(0, 1)))
-                                coi = [(Object[qa_idx], SCORE_THRESHOLD)]
+                                cor = [(Object[qa_idx], SCORE_THRESHOLD)]
                     self.qa_slq2id[self.qa_num] = slq
-                    self.qa_id2cot[self.qa_num] = coi
+                    self.qa_id2cor[self.qa_num] = cor
                     self.qa_num += 1
 
         S0 = [self._initial_scores(list_raw) for list_raw in self.list_raw]
@@ -142,11 +142,11 @@ class Sequence:
             for id2 in range(self.S.shape[1]):
                 score = S[id1, id2]
                 if score >= self.R and id1 != id2:
-                    self.qa_id2cot[id1].append((id2, score))
+                    self.qa_id2cor[id1].append((id2, score))
                     self.S[id1, id2] = score
 
     def _initial_scores(self, list_raw):
-        """根据评分数据初始化评分矩阵。"""
+        """Initialize score matrix based on relevance-scores data."""
         S = np.zeros((self.qa_num, self.qa_num), dtype=float)
         for seg_key, seg_info in list_raw.items():
             seg_idx = int(seg_key.replace('segment ', ''))
@@ -173,7 +173,7 @@ class Sequence:
         return S
 
     def build_sequence(self):
-        """生成多个 QA 序列。"""
+        """Generate multiple QA sequences."""
         qa_sequences = []
         segments = sorted({s[0] for s in self.qa_slq2id.values()})
         for _ in range(self.N):
@@ -186,25 +186,25 @@ class Sequence:
                 self._select_advanced_qa(seg_idx)
                 self._select_special_qa(seg_idx)
             for _id in self.qa_list:
-                sequence.append({'CQA': self.id2slq(int(_id)), 'COI': self.id2cot(int(_id))})
+                sequence.append({'CQA': self.id2slq(int(_id)), 'COR': self.id2cor(int(_id))})
             qa_sequences.append(sequence)
         return qa_sequences
 
     def _select_dy_qa(self, seg_idx):
-        """选择 Dynamic Updating 类 QA。"""
+        """Select Dynamic Updating class QA."""
         candidates = [qa_id for qa_id, (s_idx, level, _) in self.qa_slq2id.items()
                       if s_idx == seg_idx and level == 'Dynamic Updating']
         self.qa_list.extend(candidates)
 
     def _select_special_qa(self, seg_idx):
-        """选择特殊类 QA（除 Dynamic Updating 和 Dialogue Recalling）。"""
+        """Select special class QA (excluding Dynamic Updating and Dialogue Recalling)."""
         candidates = [qa_id for qa_id, (s_idx, level, _) in self.qa_slq2id.items()
                       if s_idx == seg_idx and level in SPECIAL_CLASSES and level not in ['Dynamic Updating', 'Dialogue Recalling']]
         dialogue_candidates = [qa_id for qa_id, (s_idx, level, _) in self.qa_slq2id.items()
                                if s_idx == seg_idx and level == 'Dialogue Recalling']
         if dialogue_candidates:
             for qa_id in dialogue_candidates:
-                p_id = [p_id for p_id, _ in self.qa_id2cot[qa_id] if p_id in self.qa_list]
+                p_id = [p_id for p_id, _ in self.qa_id2cor[qa_id] if p_id in self.qa_list]
                 if p_id:
                     candidates.extend(dialogue_candidates)
                 else:
@@ -212,7 +212,7 @@ class Sequence:
         self.qa_list.extend(candidates)
 
     def _select_basic_qa(self, seg_idx):
-        """选择基础类 QA（L1 和可能的 L2）。"""
+        """Select basic class QA (L1 and possible L2)."""
         l1_candidates = [qa_id for qa_id, (s_idx, level, _) in self.qa_slq2id.items()
                          if s_idx == seg_idx and level == 1]
         l2_candidates = [qa_id for qa_id, (s_idx, level, _) in self.qa_slq2id.items()
@@ -221,7 +221,7 @@ class Sequence:
         selected_ids = random.sample(l1_candidates, select_num)
         if random.randint(0, 1):
             for qa_id in l2_candidates:
-                p_id = [p_id for p_id, _ in self.qa_id2cot[qa_id] if p_id in selected_ids]
+                p_id = [p_id for p_id, _ in self.qa_id2cor[qa_id] if p_id in selected_ids]
                 if not p_id:
                     continue
                 index = selected_ids.index(p_id[0])
@@ -235,7 +235,7 @@ class Sequence:
         self.qa_list.extend(selected_ids)
 
     def _select_advanced_qa(self, seg_idx):
-        """选择高级类 QA（L3 和 L4）。"""
+        """Select advanced class QA (L3 and L4)."""
         for l in [3, 4]:
             l2_candidates = [qa_id for qa_id, (s_idx, level, _) in self.qa_slq2id.items()
                              if s_idx == seg_idx and level == l]
@@ -245,7 +245,7 @@ class Sequence:
                 for qa_id in l2_candidates:
                     if qa_id in self.qa_list:
                         continue
-                    predecessors = [p_id for p_id, _ in self.qa_id2cot[qa_id] if p_id in self.qa_list]
+                    predecessors = [p_id for p_id, _ in self.qa_id2cor[qa_id] if p_id in self.qa_list]
                     if not predecessors:
                         valid_l2.append((qa_id, 1))
                         continue
@@ -266,41 +266,39 @@ class Sequence:
                 self.qa_list.extend(selected_id)
 
     def _update_chain_length(self, qa_id):
-        """更新 QA 的推理链长度。"""
-        predecessors = [p_id for p_id, _ in self.qa_id2cot.get(qa_id, [])]
+        """Update QA's inference chain length."""
+        predecessors = [p_id for p_id, _ in self.qa_id2cor.get(qa_id, [])]
         self.chain_lengths[qa_id] = max(self.chain_lengths.get(p, 0) for p in predecessors) + 1 if predecessors else 1
 
     def _softmax(self, scores):
-        """带温度参数的 Softmax 归一化。"""
+        """Softmax normalization with temperature parameter."""
         exp_scores = np.exp(np.array(scores) / self.tau)
         return exp_scores / exp_scores.sum()
 
 def main(args):
-    """主函数，处理视频数据并生成 VQA 数据集。"""
+    """Main function, process video data and generate VQA dataset."""
     R = args.R
     K = args.K
     N = args.N
     tau = args.tau
     root_dir = args.root_dir
 
-    qa_tot_path = os.path.join(root_dir, 'QA_ToI')
-    qa_tot_path1 = os.path.join(root_dir, 'QA_ToI_gpt')
-    qa_pairs_path = os.path.join(root_dir, 'QA_pairs_new2')
-    output_folder = os.path.join(root_dir, 'COG_Dataset_raw')
+    qa_rs_data_path = os.path.join(root_dir, 'QA_RS')  # Relevance-score data
+    qa_pairs_path = os.path.join(root_dir, 'QA_pairs_reformatted')
+    output_folder = os.path.join(root_dir, 'CogStream_raw_dataset')
 
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
 
-    total_vid_num = len(os.listdir(qa_tot_path))
-    for vid_num, video_folder in tqdm(enumerate(os.listdir(qa_tot_path)), total=total_vid_num,
+    total_vid_num = len(os.listdir(qa_rs_data_path))
+    for vid_num, video_folder in tqdm(enumerate(os.listdir(qa_rs_data_path)), total=total_vid_num,
                                       desc='Generating VQA Dataset'):
         video_name = os.path.splitext(video_folder)[0]
         json_path = os.path.join(output_folder, f'{video_name}.json')
         if os.path.exists(json_path):
             continue
 
-        list_raw_path = os.path.join(qa_tot_path, video_folder)
-        list_raw_path1 = os.path.join(qa_tot_path1, video_folder)
+        list_raw_path = os.path.join(qa_rs_data_path, video_folder)
         video_data_path = os.path.join(qa_pairs_path, video_folder)
         all_list_raw = []
 
@@ -311,12 +309,6 @@ def main(args):
             print(f'Error loading video data for {video_name}: {e}')
             continue
 
-        if os.path.exists(list_raw_path1):
-            try:
-                with open(list_raw_path1, 'r') as jsonfile:
-                    all_list_raw.append(json.load(jsonfile))
-            except json.JSONDecodeError as e:
-                print(f'Error loading list_raw_path1 for {video_name}: {e}')
         if os.path.exists(list_raw_path):
             try:
                 with open(list_raw_path, 'r') as jsonfile:
@@ -339,7 +331,7 @@ def main(args):
             one_seq_data = []
             cqa_id = cqa_ids[num]
             for qa in qa_seq:
-                cqa, coi = qa["CQA"], qa["COI"]
+                cqa, cor = qa["CQA"], qa["COR"]
                 segment_id, level_id, qa_id = cqa
                 IS_VISUAL = True
 
@@ -371,14 +363,15 @@ def main(args):
                     qa_pairs = seg_data['QA_pairs'].get(f'L{level_id}', {})
                     qa_pair = {}
                     q_idx, a_idx = f'Q{qa_id}', f'A{qa_id}'
-                    label, q_data, t = extract_label(qa_pairs.get(q_idx, ''))
+                    result = extract_label(qa_pairs.get(q_idx, ''))
+                    label, q_data, t = result if result else (None, None, None)
                     if label:
                         label_prefix = 'Global/' if int(level_id) == 4 else 'Streaming/' if int(level_id) == 3 else 'Basic/'
                         label = label_prefix + label
                         if a_idx in qa_pairs:
                             qa_pair = {q_idx: q_data, a_idx: qa_pairs[a_idx]}
 
-                cot_info = [cqa_id[f'{s}{l}{q}'] for s, l, q in coi] if coi else []
+                cor_info = [cqa_id[f'{s}{l}{q}'] for s, l, q in cor] if cor else []
                 one_seq_data.append({
                     "segment_path": seg_data['segment_path'],
                     "segment_timestamp": segment_timestamp[-1] if segment_timestamp else None,
@@ -387,7 +380,7 @@ def main(args):
                     "label": label,
                     "is_visual": IS_VISUAL,
                     "QA_pairs": qa_pair,
-                    "coi_qa_info": str(cot_info),
+                    "cor_qa_info": str(cor_info),
                 })
             output_data_list.append({
                 "video_name": video_name,
@@ -403,7 +396,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Generate VQA Dataset")
     parser.add_argument("--root_dir", default="", type=str)
     parser.add_argument("--K", default=2, type=int, help="Number of CQAs introduced per video segment")
-    parser.add_argument("--N", default=5, type=int, help="Number of generated QA sequences")
+    parser.add_argument("--N", default=3, type=int, help="Number of generated QA sequences")
     parser.add_argument("--R", default=4, type=int, help="Score threshold")
     parser.add_argument("--tau", default=1, type=int, help="Softmax temperature coefficient")
     return parser.parse_args()

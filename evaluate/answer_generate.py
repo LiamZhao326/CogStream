@@ -88,8 +88,8 @@ class VideoDataset(Dataset):
                         data = json.load(f)
                     self.video_and_querychain.append({"video_path":video_path, "query_chains":data})
                 else:
-                    print(f"警告: 视频文件 {video_path} 未找到，对应的 JSON 文件为 {json_file}")
-        print(f"总共{len(self.video_and_querychain)}个样本。")
+                    print(f"Warning: video file {video_path} not found, corresponding JSON file is {json_file}")
+        print(f"Total {len(self.video_and_querychain)} samples.")
 
     def __len__(self):
         return len(self.video_and_querychain)
